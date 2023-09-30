@@ -1,0 +1,20 @@
+{
+
+    "autoload": {
+        "psr-4": {
+            "Api\\WebSocket\\": "src/"
+        }
+    },
+    
+    "authors": [
+        {
+            "name": "Mateus Sampaio",
+            "email": "mateuspfs3@gmail.com"
+        }
+    ],
+
+    "require": {
+        "cboden/ratchet": "^0.4.4",
+        "vlucas/phpdotenv": "^5.5"
+    }    
+}
