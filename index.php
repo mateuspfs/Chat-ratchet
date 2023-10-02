@@ -30,7 +30,7 @@ ob_start();
 
 <?php
 
-    require_once 'config/connection.php';
+    require_once 'api/connection.php';
 
     $dados = filter_input_array(INPUT_POST, FILTER_DEFAULT);
 
