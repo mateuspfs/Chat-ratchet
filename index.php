@@ -1,5 +1,7 @@
 <?php
 
+use Api\WebSocket\dbConnection;
+
 session_start();
 ob_start();
 
@@ -35,7 +37,7 @@ ob_start();
     $dados = filter_input_array(INPUT_POST, FILTER_DEFAULT);
 
     if(!empty($dados['acessar'])) { 
-        $sql = $conn->prepare("SELECT * FROM users WHERE username = :nome AND passw = :senha");
+        $sql = $conn->prepare("SELECT * FROM usuarios WHERE nome = :nome AND senha_usuario = :senha");
         $sql->bindParam(':nome', $dados['usuario']);
         $sql->bindParam(':senha', $dados['passw']);
         $sql->execute();
@@ -52,4 +54,5 @@ ob_start();
             }
         }
     }
+
 ?>

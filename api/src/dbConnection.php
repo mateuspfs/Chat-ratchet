@@ -36,24 +36,8 @@ class dbConnection
             return $this->connect;
             
           } catch (PDOException $err) {
-            die("Erro na conexão com o banco de dados!");
+            die("Erro na conexão com o banco de dados: " . $err->getMessage());
           }
-    }
-
-    private function salvarMensagemBanco($mensagem)
-    {
-       $dbConnection = new dbConnection();
-       $conn = $dbConnection->getConnect();
-
-       $querryMsg = "INSERT INTO messages(message_text) VALUES (:mensagem)";
-
-       $addMensagem = $conn->prepare($querryMsg);
-       
-       $mensagemArray = json_decode($mensagem, true);
-
-       $addMensagem->bindParam(':mensagem', $mensagemArray['mensagem']);
-
-       $addMensagem->execute();
     }
 }
 
