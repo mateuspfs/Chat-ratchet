@@ -20,5 +20,3 @@ Instalar a dependencias Ratchet, biblioteca PHP que permite criar aplicativos de
 Rodar o projeto com PHP, para executar é necessário acessar o diretório api através do terminal ou prompt de comando
 ### php servidor_chat.php
 
-## CRÉDITOS
-## CELKE
