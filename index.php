@@ -20,7 +20,7 @@ ob_start();
         <input type="text" name="usuario" placeholder="Digite seu nome...">
 
         <label>Senha: </label>
-        <input type="text" name="passw" placeholder="Digite sua senha...">
+        <input type="password" name="senha" placeholder="Digite sua senha...">
 
         <input type="submit" name="acessar" value="acessar">
     </form>
@@ -35,9 +35,9 @@ ob_start();
     $dados = filter_input_array(INPUT_POST, FILTER_DEFAULT);
 
     if(!empty($dados['acessar'])) { 
-        $sql = $conn->prepare("SELECT * FROM users WHERE username = :nome AND passw = :senha");
+        $sql = $conn->prepare("SELECT * FROM usuarios WHERE nome = :nome AND senha = :senha");
         $sql->bindParam(':nome', $dados['usuario']);
-        $sql->bindParam(':senha', $dados['passw']);
+        $sql->bindParam(':senha', $dados['senha']);
         $sql->execute();
 
         if ($sql->errorCode() !== '00000') {
@@ -45,11 +45,15 @@ ob_start();
             echo "Erro ao executar a consulta: " . $error[2];
         } else {
             if ($sql->rowCount() == 1) {
-                $_SESSION['usuario'] = $dados['usuario'];
+                $usuario = $sql->fetch(PDO::FETCH_ASSOC);
+                $_SESSION['id_user'] = $usuario['id_user'];
+                $_SESSION['usuario'] = $usuario['nome'];
                 header('Location: chat.php');
             } else {
-                echo 'Usuário ou senha incorreto!';
+                $_SESSION['msg'] = "<p style='color:#f00'>Usuário ou senha incorreto!</p>";
             }
         }
     }
+        
+    $conn = null;
 ?>

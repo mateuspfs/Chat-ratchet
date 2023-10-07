@@ -23,37 +23,18 @@ class dbConnection
         $this->user = $_ENV['db_user'];
         $this->pass = $_ENV['db_pass'];
         $this->db_name = $_ENV['db_name'];
-        $this->port = (int)$_ENV['db_port'];
-        $this->connect = null; 
     }
 
     public function getConnect(): object
     {
         try {
-            $this->connect = new PDO("mysql:host={$this->host};port={$this->port};dbname={$this->db_name}",
-                                      $this->user, $this->pass);       
-            echo "Conexão realizada com sucesso";  
+            $this->connect = new PDO("mysql:host={$this->host};dbname={$this->db_name}",
+                                      $this->user, $this->pass);        
             return $this->connect;
             
           } catch (PDOException $err) {
-            die("Erro na conexão com o banco de dados!");
+            die("Erro na conexão com o banco de dados: " . $err->getMessage());
           }
-    }
-
-    private function salvarMensagemBanco($mensagem)
-    {
-       $dbConnection = new dbConnection();
-       $conn = $dbConnection->getConnect();
-
-       $querryMsg = "INSERT INTO messages(message_text) VALUES (:mensagem)";
-
-       $addMensagem = $conn->prepare($querryMsg);
-       
-       $mensagemArray = json_decode($mensagem, true);
-
-       $addMensagem->bindParam(':mensagem', $mensagemArray['mensagem']);
-
-       $addMensagem->execute();
     }
 }
 

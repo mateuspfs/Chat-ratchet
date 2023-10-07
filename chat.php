@@ -2,6 +2,9 @@
 
 session_start();
 
+ob_start();
+
+require_once 'verificacao.php';
 ?>
 
 <!DOCTYPE html>
@@ -13,7 +16,11 @@ session_start();
 </head>
 <body>
     <h1>Chat</h1>
+
+    <a href="sair.php">Sair</a>
+
     <h3>Bem vindo <span id="usuario"><?php echo $_SESSION['usuario']?></span></h3>
+
     <label>Nova Mensagem:</label>
     <input type="text" name="mensagem" id="mensagem" placeholder="Digite a mensagem...">
 
@@ -36,11 +43,11 @@ session_start();
 
         ws.onmessage = (mensagemRecebida) => {
 
-            // ler a mensagme enviada
+            // ler a mensagem enviada
             let resultado = JSON.parse(mensagemRecebida.data);
 
             // enviar a mensagem para o html, inserindo no final
-            mensagemChat.insertAdjacentHTML('beforeend', `${resultado.mensagem}`);
+            mensagemChat.insertAdjacentHTML('beforeend', `${resultado.nome}:${resultado.mensagem}`);
         }
 
         const enviar = () =>{
@@ -49,10 +56,14 @@ session_start();
 
             // recuperar nome usuario
             let usuario = document.getElementById("usuario").textContent;
-           
+
+            let idUser = <?php echo $_SESSION['id_user']; ?>;
+
             // criar array de dados para enviar
             let dados = {
-                mensagem: `${usuario}: ${mensagem.value} <br>`
+                mensagem: `${mensagem.value}`,
+                id_user: idUser,
+                nome: usuario
             }
 
             // enviar a mensagem para websocket

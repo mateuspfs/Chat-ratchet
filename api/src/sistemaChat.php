@@ -38,7 +38,7 @@ class sistemaChat implements MessageComponentInterface{
                 $cliente->send($msg);
             }
         }
-        echo "Usuário {$from->resourceId} enviou uma mensagem \n\n";
+        $this->salvarMensagemNoBanco($msg);
     }
 
     // Desconectar o cliente do websocket
@@ -57,7 +57,22 @@ class sistemaChat implements MessageComponentInterface{
         $conn->close();
 
         echo "Ocorreu um erro: {$e->getMessage()} \n\n";
-
     }
 
+    private function salvarMensagemNoBanco($mensagem)
+    {
+       $dbConnection = new dbConnection();
+       $conn = $dbConnection->getConnect();
+
+       $querryMsg = "INSERT INTO mensagens(mensagem_text, id_user) VALUES (:mensagem, :id_user)";
+
+       $addMensagem = $conn->prepare($querryMsg);
+       
+       $mensagemArray = json_decode($mensagem, true);
+
+       $addMensagem->bindParam(':mensagem', $mensagemArray['mensagem']);
+       $addMensagem->bindParam(':id_user', $mensagemArray['id_user']);
+
+       $addMensagem->execute();
+    }
 }
