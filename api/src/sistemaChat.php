@@ -64,14 +64,21 @@ class sistemaChat implements MessageComponentInterface{
        $dbConnection = new dbConnection();
        $conn = $dbConnection->getConnect();
 
+<<<<<<< HEAD
        $querryMsg = "INSERT INTO mensagens(mensagem_text, id_user) VALUES (:mensagem, :id_user)";
+=======
+       $querryMsg = "INSERT INTO mensagens(mensagem) VALUES (:mensagem)";
+>>>>>>> 6adc575b327ea9153f614d4f6124c6f350d1cc66
 
        $addMensagem = $conn->prepare($querryMsg);
        
        $mensagemArray = json_decode($mensagem, true);
 
        $addMensagem->bindParam(':mensagem', $mensagemArray['mensagem']);
+<<<<<<< HEAD
        $addMensagem->bindParam(':id_user', $mensagemArray['id_user']);
+=======
+>>>>>>> 6adc575b327ea9153f614d4f6124c6f350d1cc66
 
        $addMensagem->execute();
     }
