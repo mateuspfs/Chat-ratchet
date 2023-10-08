@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
  engine InnoDB;
 
 CREATE TABLE IF NOT EXISTS mensagens (
-	id_mesagem INT AUTO_INCREMENT PRIMARY KEY,
+	id_msg INT AUTO_INCREMENT PRIMARY KEY,
     mensagem_text VARCHAR(90),
     id_user INT,
     data_hora TIMESTAMP,
@@ -29,5 +29,3 @@ INSERT INTO mensagens(mensagem_text, id_user) VALUES
 ('Tudo bem com você?', '1'),
 ('Tudo sim, e com vc?', '2');
 
-select *  from usuarios;
-select *  from mensagens;
