@@ -14,7 +14,6 @@ class dbConnection
     private string $user;
     private string $pass;
     private string $db_name;
-    private int|string $port;
     private object $connect;
 
     public function __construct()

@@ -1,7 +1,5 @@
 <?php
 
-use Api\WebSocket\dbConnection;
-
 session_start();
 ob_start();
 
@@ -33,7 +31,7 @@ ob_start();
 <?php
 
     require_once 'api/connection.php';
-
+    
     $dados = filter_input_array(INPUT_POST, FILTER_DEFAULT);
 
     if(!empty($dados['acessar'])) { 
@@ -56,6 +54,5 @@ ob_start();
             }
         }
     }
-        
     $conn = null;
 ?>

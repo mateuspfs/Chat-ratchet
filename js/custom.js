@@ -20,19 +20,23 @@
 
  const enviar = () =>{
      // recuperar mensagem
-     let mensagem = document.getElementById("mensagem");
+    let mensagem = document.getElementById("mensagem");
 
      // recuperar nome usuario
-     let usuario = document.getElementById("usuario").textContent;
+    let usuario = document.getElementById("usuario").textContent;
 
     // recuperar id do usuario
-     let idUser = document.getElementById("id_user").value;
+    let idUser = document.getElementById("id_user").value;
 
+    // recuperar id da conversa
+    let idConversa = 
+     
      // criar array de dados para enviar
      let dados = {
          mensagem: `${mensagem.value}`,
          id_user: idUser,
-         nome: usuario
+         nome: usuario,
+         id_conversa: idConversa
      }
 
      // enviar a mensagem para websocket
@@ -64,34 +68,31 @@ var offset = 0;
 // chatBox.addeEventListener('scroll', verificarScroll);
 
 
-// Carregar mensagens do banco de dados
+// Quantidade de mensagens carregadas
+var offset = 0;
+
+// ID da sala
+var id_conversa = 1; // Defina o ID da sala apropriado
+
+console.log("OFFSET:", offset, "Id da conversa", id_conversa);
+
+// Função para carregar mensagens do banco de dados
 async function carregarMsg() {
+    // Chamar o PHP para carregar as mensagens do banco
+    var dados = await fetch(`listar_msg.php?offset=${offset}&id_conversa=${id_conversa}`);
 
-    // chamar o php para carregar as mensagens do banco
-    var dados = await fetch(`listar_msg.php?offset=${offset}`);
-    
     var resposta = await dados.json();
-    console.log(resposta);
 
-    if(resposta['status']){
-
-            //ler as msg e enviar pro chat
-            resposta['dados'].map(item => { 
- 
-            // recuperar id usuario 
+    if (resposta.status) {
+        resposta.dados.forEach(item => {
             var idUser = document.getElementById('id_user').value;
-
-            if(idUser == item.id_user){
-                mensagemChat.insertAdjacentHTML('afterbegin', `${item.nome}: ${item.mensagem_text} <br>`);
-            } else {
-                mensagemChat.insertAdjacentHTML('afterbegin', `${item.nome}: ${item.mensagem_text} <br>`);
-            }
+            var mensagem = `${item.nome}: ${item.mensagem_text} <br>`;
+            mensagemChat.insertAdjacentHTML('afterbegin', idUser == item.id_user ? mensagem : mensagem);
         });
     } else {
-        //envia a mensagem para o html
-        mensagemChat.insertAdjacentHTML('afterbegin', `<p style= 'color:red;'>${resposta['msg']}</p>`);
+        mensagemChat.insertAdjacentHTML('afterbegin', `<p style='color:red;'>${resposta.msg}</p>`);
     }
  }
 
- // carregar as mensagens inicialmente
- carregarMsg();
+// Carregar as mensagens inicialmente
+carregarMsg();
