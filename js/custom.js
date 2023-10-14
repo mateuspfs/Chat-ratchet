@@ -1,8 +1,12 @@
- // recuperar o id que deve receber as msgs do chat
- const mensagemChat = document.getElementById('mensagem-chat');
-        
- // endereço websocket
- const ws = new WebSocket('ws://localhost:8080');
+// recuperar o id que deve receber as msgs do chat
+const mensagemChat = document.getElementById('mensagem-chat');
+// endereço websocket
+const ws = new WebSocket('ws://localhost:8080');
+// Quantidade de mensagens carregadas
+var offset = 0;
+// ID da sala
+var id_conversa = 1; // Defina o ID da sala apropriado
+
 
  //realizar a conexão websocket
  ws.onopen = (e) => {
@@ -18,7 +22,7 @@
      mensagemChat.insertAdjacentHTML('beforeend', `${resultado.nome}:${resultado.mensagem} <br>`);
  }
 
- const enviar = () =>{
+ const enviar = () => {
      // recuperar mensagem
     let mensagem = document.getElementById("mensagem");
 
@@ -29,11 +33,11 @@
     let idUser = document.getElementById("id_user").value;
 
     // recuperar id da conversa
-    let idConversa = 
+     let idConversa = 1;
      
      // criar array de dados para enviar
      let dados = {
-         mensagem: `${mensagem.value}`,
+         mensagem: `${mensagem.value}`, 
          id_user: idUser,
          nome: usuario,
          id_conversa: idConversa
@@ -49,8 +53,6 @@
      mensagem.value = '';
  }
 
-// Quantidade de mensagens carregados
-var offset = 0;
 
 // // Mover o scroll para o final
 // var roleFinal = true;
@@ -67,12 +69,6 @@ var offset = 0;
 
 // chatBox.addeEventListener('scroll', verificarScroll);
 
-
-// Quantidade de mensagens carregadas
-var offset = 0;
-
-// ID da sala
-var id_conversa = 1; // Defina o ID da sala apropriado
 
 console.log("OFFSET:", offset, "Id da conversa", id_conversa);
 

@@ -15,7 +15,7 @@ try {
                         INNER JOIN usuarios AS u
                             ON u.id_user = msg.id_user
                                 WHERE msg.id_conversa = :id_conversa
-                                ORDER BY msg.data_registro DESC 
+                                ORDER BY msg.data_registro ASC 
                                 LIMIT :limit
                                 OFFSET :offset";
 

@@ -1,14 +1,67 @@
 <?php
 
-namespace Api\WebSocket\sistemaChat;
-use conversasDoUsuario;
+session_start();
+ob_start();
+require_once 'verificacao.php';
 
-$idsConversa = conversasDoUsuario($conn);
+try {
+    require_once 'api/connection.php';
 
-?>
+    $queryConvUser = $conn->prepare('SELECT c.id_conversa 
+                                        FROM conversas as c
+                                        INNER JOIN participante_conversa as pc 
+                                            ON c.id_conversa = pc.id_conversa
+                                        INNER JOIN usuarios as u 
+                                            ON u.id_user = pc.id_user
+                                        WHERE u.id_user = :id_user');
 
-<script>
-  // Coloque os IDs das conversas em uma variável JavaScript
-  var conversasDoUsuario = <?php echo json_encode($idsConversas); ?>;
-  console.log(conversasDoUsuario);
-</script>
+    $queryConvUser->bindParam(':id_user', $_SESSION['id_user']);
+    $queryConvUser->execute();
+
+    if ($queryConvUser && $queryConvUser->rowCount() != 0) {
+        $result_idConversa = $queryConvUser->fetchAll(PDO::FETCH_ASSOC);
+
+        $dados = [];
+
+        foreach ($result_idConversa as $conversa) {
+            $queryUserConv = $conn->prepare('SELECT pc.id_user
+                                            FROM conversas as c
+                                            INNER JOIN participante_conversa as pc 
+                                                ON c.id_conversa = pc.id_conversa
+                                            INNER JOIN usuarios as u 
+                                                ON u.id_user = pc.id_user
+                                            WHERE pc.id_conversa = :id_conversa
+                                                AND pc.id_user != :id_user');
+
+            $queryUserConv->bindParam(':id_conversa', $conversa['id_conversa']);
+            $queryUserConv->bindParam(':id_user', $_SESSION['id_user']);
+            $queryUserConv->execute();
+
+            if ($queryUserConv && $queryUserConv->rowCount() != 0) {
+                $id_user = array_column($queryUserConv->fetchAll(PDO::FETCH_ASSOC), 'id_user');
+                $id_user = $id_user[0]; // Pega o primeiro valor do array
+
+                $dados[] = [
+                    'id_conversa' => $conversa['id_conversa'],
+                    'id_user' => $id_user,
+                ];
+            }
+        }
+        
+        $retorno = ['dados' => $dados];
+    } else {
+        // Criar array de retorno
+        $retorno = ['msg' => "O usuário não está associado a nenhuma conversa"];
+    }
+} catch (PDOException $e) {
+    // Tratar exceções PDO (erros de banco de dados)
+    $retorno = ['msg' => 'Erro no banco de dados: ' . $e->getMessage()];
+} catch (Exception $e) {
+    // Tratar outras exceções
+    $retorno = ['msg' => 'Erro: ' . $e->getMessage()];
+}
+
+// Retorna o resultado como JSON
+echo json_encode($retorno);
+
+

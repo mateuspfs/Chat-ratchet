@@ -11,9 +11,10 @@ use Ratchet\WebSocket\MessageComponentInterface;
 
 class sistemaChat implements MessageComponentInterface {
     protected $cliente;
+
     protected $userConnections = [];
 
-    private $userConversations = [];
+    protected $userConversations = [];
 
     public function __construct() 
     {
@@ -35,7 +36,7 @@ class sistemaChat implements MessageComponentInterface {
         // Adicionar o cliente na lista
         $this->cliente->attach($conn);
 
-        echo "Nova conexão: {$conn->resourceId}\n\n";
+        echo "Nova conexão: {$conn->resourceId }\n\n";
     }
 
     public function onMessage(ConnectionInterface $from, $msg) {
@@ -66,7 +67,7 @@ class sistemaChat implements MessageComponentInterface {
         echo "Ocorreu um erro: {$e->getMessage()} \n\n";
     }
 
-    private function conversasDoUsuario(ConnectionInterface $conn) {
+    public function conversasDoUsuario(ConnectionInterface $conn) {
         // Pega os IDs das conversas às quais o usuário está ligado 
         $dbConnection = new dbConnection();
         $conn = $dbConnection->getConnect();
