@@ -1,7 +1,4 @@
 <?php
-
-session_start();
-ob_start();
 require_once 'verificacao.php';
 
 try {
@@ -24,30 +21,25 @@ try {
         $dados = [];
 
         foreach ($result_idConversa as $conversa) {
-            $queryUserConv = $conn->prepare('SELECT pc.id_user
+            $queryUserConv = $conn->prepare("SELECT pc.id_conversa as 'id_conversa', pc.id_user as 'id_user', u.nome as 'nome_user'
                                             FROM conversas as c
                                             INNER JOIN participante_conversa as pc 
                                                 ON c.id_conversa = pc.id_conversa
                                             INNER JOIN usuarios as u 
                                                 ON u.id_user = pc.id_user
                                             WHERE pc.id_conversa = :id_conversa
-                                                AND pc.id_user != :id_user');
+                                                AND pc.id_user != :id_user");
 
             $queryUserConv->bindParam(':id_conversa', $conversa['id_conversa']);
             $queryUserConv->bindParam(':id_user', $_SESSION['id_user']);
             $queryUserConv->execute();
 
             if ($queryUserConv && $queryUserConv->rowCount() != 0) {
-                $id_user = array_column($queryUserConv->fetchAll(PDO::FETCH_ASSOC), 'id_user');
-                $id_user = $id_user[0]; // Pega o primeiro valor do array
+                $users = $queryUserConv->fetchAll(PDO::FETCH_ASSOC);
 
-                $dados[] = [
-                    'id_conversa' => $conversa['id_conversa'],
-                    'id_user' => $id_user,
-                ];
+                $dados[$conversa['id_conversa']] = $users;
             }
         }
-        
         $retorno = ['dados' => $dados];
     } else {
         // Criar array de retorno

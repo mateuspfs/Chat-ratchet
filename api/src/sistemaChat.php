@@ -3,7 +3,6 @@
 namespace Api\WebSocket;
 
 use DateTime;
-use DateTimeZone;
 use Exception;
 use PDO;
 use Ratchet\ConnectionInterface;
@@ -23,22 +22,36 @@ class sistemaChat implements MessageComponentInterface {
     }
 
     // Abrir conexão para novo cliente
-    public function onOpen(ConnectionInterface $conn) 
-    {
-        // Obtenha as conversas às quais o usuário pertence a partir do banco de dados
-        $conversations = $this->conversasDoUsuario($conn);
+    public function onOpen(ConnectionInterface $conn) {
+        if ($_SESSION['id_user']) {
+            $id_user =  $_SESSION['id_user'];
 
-        // Associe o usuário às conversas
-        foreach ($conversations as $conversation) {
-            $this->userConversations[$conn->resourceId][] = $conversation['id_conversa'];
+            if ($id_user){
+                 // Associe a conexão WebSocket ao id_user
+                $this->userConnections[$id_user] = $conn;
+        
+                // Obtenha as conversas às quais o usuário pertence a partir do banco de dados
+                $conversations = $this->conversasDoUsuario($conn);
+        
+                // Associe o usuário às conversas
+                foreach ($conversations as $conversation) {
+                    $this->userConversations[$conn->resourceId][] = $conversation['id_conversa'];
+                }
+        
+                // Adicionar o cliente na lista
+                $this->cliente->attach($conn);
+        
+                echo "Nova conexão: {$conn->resourceId}\n\n";
+            }  
+        } else {
+            $this->cliente->attach($conn);
+    
+            echo "Nova conexão: {$conn->resourceId}\n\n";
+            // Feche a conexão se o id_user não for fornecido
+            $conn->close();
         }
-
-        // Adicionar o cliente na lista
-        $this->cliente->attach($conn);
-
-        echo "Nova conexão: {$conn->resourceId }\n\n";
     }
-
+    
     public function onMessage(ConnectionInterface $from, $msg) {
         // Verificar se o usuário está autorizado a enviar mensagens para a conversa
         $userConversations = $this->userConversations[$from->resourceId] ?? [];
@@ -72,7 +85,7 @@ class sistemaChat implements MessageComponentInterface {
         $dbConnection = new dbConnection();
         $conn = $dbConnection->getConnect();
 
-        $queryConvUser = $conn->prepare('SELECT c.id_conversa 
+        $queryConvUser = $conn->prepare('SELECT c.id_conversa, u.id_user
                                             FROM conversas as c
                                                 INNER JOIN participante_conversa as pc 
                                                     ON c.id_conversa = pc.id_conversa
@@ -173,21 +186,20 @@ class sistemaChat implements MessageComponentInterface {
     {
         $dbConnection = new dbConnection();
         $conn = $dbConnection->getConnect();
-
-        $queryMsg = "INSERT INTO mensagens(mensagem_text, id_user, id_conversa, data_registro) 
-                     VALUES (:mensagem, :id_user, :id_conversa, :data_registro)";
         
         $mensagemArray = json_decode($mensagem, true);
 
-        $addMensagem = $conn->prepare($queryMsg);
+        $dataHoraAtual = new DateTime();
+        // formatando para string
+        $dataHoraFormatada = $dataHoraAtual->format('Y-m-d H:i:s');
 
-        $timezone = new DateTimeZone('America/Sao_Paulo');
-        $currentDateTime = new DateTime('now', $timezone);   
+        $addMensagem = $conn->prepare("INSERT INTO mensagens(mensagem_text, id_user, id_conversa, data_registro) 
+        VALUES (:mensagem, :id_user, :id_conversa, :data_registro)");
 
         $addMensagem->bindParam(':mensagem', $mensagemArray['mensagem']);
         $addMensagem->bindParam(':id_user', $mensagemArray['id_user']);
         $addMensagem->bindParam(':id_conversa', $mensagemArray['id_conversa']);
-        $addMensagem->bindParam(':data_registro', $currentDateTime);
+        $addMensagem->bindParam(':data_registro', $dataHoraFormatada);
 
         $addMensagem->execute();
     }
