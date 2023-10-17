@@ -7,8 +7,6 @@ use Ratchet\WebSocket\WsServer;
 
 require_once 'vendor/autoload.php';
 
-session_start(); // Inicie a sessão
-
 $server = IoServer::factory(
     new HttpServer(
         new WsServer(

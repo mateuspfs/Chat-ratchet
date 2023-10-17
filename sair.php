@@ -1,8 +1,5 @@
 <?php
-
-if(!isset($_SESSION)){
-    session_start();
-}
+require 'verificacao.php';
 
  session_unset();
  session_destroy();

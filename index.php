@@ -3,8 +3,9 @@
 session_start();
 ob_start();
 
-if(isset($_SESSION['msg'])){
-    echo $_SESSION['msg'];
+
+if(isset($_SESSION['id_user'])){
+    header('Location: chat.php');
 }
 
 ?>

@@ -1,14 +1,21 @@
 // recuperar o id que deve receber as msgs do chat
-const mensagemChat = document.getElementById('mensagem-chat');
+const mensagemChat = document.getElementById("mensagem-chat");
 
 let idConversaAtual = null;
 
 // quantidade mensagens carregadas
 var offset = 0;
 
+// recuperar id_usuario 
+const id_usuario = document.getElementById("id_user").value;
+
+//mandar o id pelo metódo GET 
+// const ws = new WebSocket(`ws://localhost:8080?user=${id_usuario}`);
+// console.log(ws);
+
 const ws = new WebSocket(`ws://localhost:8080`);
 
-//realizar a conexão websocket
+// realizar a conexão websocket
 ws.onopen = (e) => {}
 
 ws.onmessage = (mensagemRecebida) => {
@@ -22,20 +29,19 @@ ws.onmessage = (mensagemRecebida) => {
 
 const enviar = () => {
     // recuperar mensagem
-let mensagem = document.getElementById("mensagem");
+    let mensagem = document.getElementById("mensagem");
 
-// recuperar nome usuario
-let usuario = document.getElementById("usuario").textContent;
+    // recuperar nome usuario
+    let usuario = document.getElementById("usuario").textContent;
 
-// recuperar id do usuario
-let idUser = document.getElementById("id_user").value;
+    // recuperar id do usuario
+    let idUser = document.getElementById("id_user").value;
 
-    if (idConversaAtual !== null) {
-        let dados = {
-            mensagem: mensagem.value,
-            id_user: idUser,
-            nome: usuario,
-            id_conversa: idConversaAtual
+    let dados = {
+        mensagem: mensagem.value,
+        id_user: idUser,
+        nome: usuario,
+        id_conversa: idConversaAtual
     };
 
     // enviar a mensagem para websocket
@@ -46,7 +52,6 @@ let idUser = document.getElementById("id_user").value;
 
     // limpa o campo
     mensagem.value = '';
-    }
 }
 
 // Função para buscar os dados das conversas usando fetch
@@ -86,15 +91,16 @@ function atualizarPagina(conversas) {
         const conversaItem = document.createElement('li');
         conversaItem.className = 'conversa-item';
         conversaItem.setAttribute('data-conversa-id', idConversa);
-        conversaItem.textContent = `Conversa ${idConversa}`;
-        
+        const primeiroUsuario = conversa[0];
+        conversaItem.textContent = primeiroUsuario.nome_user;
+
         // Adicione a conversa à lista
         userList.appendChild(conversaItem);
 
         // Adicione eventos de clique para mostrar o chat quando a conversa for clicada
         conversaItem.addEventListener('click', () => {
-            // Código para mostrar o chat da conversa correspondente
-            mostrarChat(conversa, idConversa);
+        // Código para mostrar o chat da conversa correspondente
+        mostrarChat(conversa, idConversa);
         });
     }
 }
@@ -102,6 +108,7 @@ function atualizarPagina(conversas) {
 // Função para mostrar o chat com os usuários da conversa
 function mostrarChat(usuarios, idConversa) {
     mensagemChat.innerHTML = '';
+    idConversaAtual = idConversa;
 
     usuarios.forEach(usuario => {
         // mostarar o usuario e conectado a conversa e o id dele
@@ -115,10 +122,6 @@ function mostrarChat(usuarios, idConversa) {
 
     // Agora o chat está visível após o clique
     mensagemChat.style.display = 'block';
-
-    //resgatando valor idConversa
-    idConversaAtual = idConversa;
-
     carregarMsg(usuarios[0].id_conversa); 
 }
 
@@ -140,10 +143,6 @@ async function carregarMsg(idConversa) {
     }
 }
 
-// Chame a função para buscar os dados das conversas quando a página carregar
-document.addEventListener('DOMContentLoaded', buscarDadosConversas);
-
-
 // // Mover o scroll para o final
 // var roleFinal = true;
 
@@ -159,3 +158,5 @@ document.addEventListener('DOMContentLoaded', buscarDadosConversas);
 
 // chatBox.addeEventListener('scroll', verificarScroll);
 
+// Chame a função para buscar os dados das conversas quando a página carregar
+document.addEventListener('DOMContentLoaded', buscarDadosConversas);
