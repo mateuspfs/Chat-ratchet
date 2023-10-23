@@ -1,22 +1,13 @@
-// recuperar o id que deve receber as msgs do chat
-const mensagemChat = document.getElementById("mensagem-chat");
+
+const userId = document.getElementById('id_user').value; // pegar o ID do usuário da sessão PHP
+
+const mensagemChat = document.getElementById('mensagem-chat'); // recuperar o id que deve receber as msgs do chat
+
+var offset = 0;
 
 let idConversaAtual = null;
 
-// quantidade mensagens carregadas
-var offset = 0;
-
-// recuperar id_usuario 
-const id_usuario = document.getElementById("id_user").value;
-
-//mandar o id pelo metódo GET 
-// const ws = new WebSocket(`ws://localhost:8080?user=${id_usuario}`);
-// console.log(ws);
-
-const ws = new WebSocket(`ws://localhost:8080`);
-
-// realizar a conexão websocket
-ws.onopen = (e) => {}
+const ws = new WebSocket('ws://localhost:8080?id_user=' + userId);
 
 ws.onmessage = (mensagemRecebida) => {
 
@@ -34,12 +25,9 @@ const enviar = () => {
     // recuperar nome usuario
     let usuario = document.getElementById("usuario").textContent;
 
-    // recuperar id do usuario
-    let idUser = document.getElementById("id_user").value;
-
     let dados = {
         mensagem: mensagem.value,
-        id_user: idUser,
+        id_user: userId,
         nome: usuario,
         id_conversa: idConversaAtual
     };
@@ -134,9 +122,8 @@ async function carregarMsg(idConversa) {
 
     if (resposta.status) {
         resposta.dados.forEach(item => {
-            var idUser = document.getElementById('id_user').value;
             var mensagem = `${item.nome}: ${item.mensagem_text} <br>`;
-            mensagemChat.insertAdjacentHTML('afterbegin', idUser == item.id_user ? mensagem : mensagem);
+            mensagemChat.insertAdjacentHTML('afterbegin', userId == item.id_user ? mensagem : mensagem);
         });
     } else {
         mensagemChat.insertAdjacentHTML('afterbegin', `<p style='color:red;'>${resposta.msg}</p>`);
@@ -159,4 +146,5 @@ async function carregarMsg(idConversa) {
 // chatBox.addeEventListener('scroll', verificarScroll);
 
 // Chame a função para buscar os dados das conversas quando a página carregar
+
 document.addEventListener('DOMContentLoaded', buscarDadosConversas);

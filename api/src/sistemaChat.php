@@ -2,7 +2,6 @@
 
 namespace Api\WebSocket;
 
-use DateTime;
 use Exception;
 use PDO;
 use Ratchet\ConnectionInterface;
@@ -21,53 +20,36 @@ class sistemaChat implements MessageComponentInterface {
         $this->cliente = new \SplObjectStorage;
     }
 
-    public function onOpen(ConnectionInterface $conn) 
-    {
+    public function onOpen(ConnectionInterface $conn) {
         try {
-            // Obtenha as conversas às quais o usuário pertence a partir do banco de dados
-            $conversations = $this->conversasDoUsuario($conn);
-
-            // Associe o usuário às conversas
-            foreach ($conversations as $conversation) {
-                $this->userConversations[$conn->resourceId][] = $conversation['id_conversa'];
+            $id_user = $this->idUserConnection($conn);
+    
+            if ($id_user !== null) {
+                // Associe a conexão WebSocket ao id_user
+                $this->userConnections[$id_user] = $conn;
+    
+                // Obtenha as conversas às quais o usuário pertence a partir do banco de dados
+                $conversations = $this->conversasDoUsuario($id_user);
+    
+                // Associe o usuário às conversas
+                foreach ($conversations as $conversation) {
+                    $this->userConversations[$conn->resourceId][] = $conversation['id_conversa'];
+                }
+    
+                // Adicione o cliente na lista
+                $this->cliente->attach($conn);
+    
+                echo "Nova conexão para o usuário {$id_user} ({$conn->resourceId})\n\n";
+            } else {
+                // Feche a conexão se o id_user não for fornecido
+                $conn->close();
             }
-
-            // Adicionar o cliente na lista
-            $this->cliente->attach($conn);
-
-            echo "Nova conexão: {$conn->resourceId} \n\n";
         } catch (Exception $e) {
             // Lidar com erros ao abrir a conexão
-            echo 'Erro ao salvar mensagem no banco de dados: ' . $e->getMessage();
+            echo 'Erro ao abrir a conexão: ' . $e->getMessage();
         }
     }
 
-    // Abrir conexão para novo cliente
-    // public function onOpen(ConnectionInterface $conn) {
-    //     $id_user = $_GET['user'] ?? null;
-        
-    //     if ($id_user !== null) {
-    //         // Associe a conexão WebSocket ao id_user
-    //         $this->userConnections[$id_user] = $conn;
-    
-    //         // Obtenha as conversas às quais o usuário pertence a partir do banco de dados
-    //         $conversations = $this->conversasDoUsuario($conn);
-    
-    //         // Associe o usuário às conversas
-    //         foreach ($conversations as $conversation) {
-    //             $this->userConversations[$conn->resourceId][] = $conversation['id_conversa'];
-    //         }
-    
-    //         // Adicionar o cliente na lista
-    //         $this->cliente->attach($conn);
-    
-    //         echo "Nova conexão para o usuário {$id_user} ({$conn->resourceId})\n\n";
-    //     } else {
-    //         // Feche a conexão se o id_user não for fornecido
-    //         $conn->close();
-    //     }
-    // }
-    
     public function onMessage(ConnectionInterface $from, $msg) {
         // Verificar se o usuário está autorizado a enviar mensagens para a conversa
         $userConversations = $this->userConversations[$from->resourceId] ?? [];
@@ -83,14 +65,7 @@ class sistemaChat implements MessageComponentInterface {
                 echo 'Erro ao enviar mensagem: ' . $e->getMessage();
             }
         }
-    
-        try {
-            $this->salvarMensagemNoBanco($msg);
-        } catch (Exception $e) {
-            // Lidar com erros durante o salvamento da mensagem no banco de dados
-            // Aqui você pode registrar o erro, notificar o usuário, etc.
-            echo 'Erro ao salvar mensagem no banco de dados: ' . $e->getMessage();
-        }
+        $this->salvarMensagemNoBanco($msg);
     }
     
 
@@ -110,28 +85,28 @@ class sistemaChat implements MessageComponentInterface {
         echo "Ocorreu um erro: {$e->getMessage()} \n\n";
     }
 
-    public function conversasDoUsuario(ConnectionInterface $conn) {
-        try{
-            // Pega os IDs das conversas às quais o usuário está ligado 
+    public function conversasDoUsuario($id_user) {
+        try {
+            // Pega os IDs das conversas às quais o usuário está ligado
             $dbConnection = new dbConnection();
             $conn = $dbConnection->getConnect();
             $queryConvUser = $conn->prepare('SELECT c.id_conversa, u.id_user
                                                 FROM conversas as c
-                                                    INNER JOIN participante_conversa as pc 
-                                                        ON c.id_conversa = pc.id_conversa
-                                                    INNER JOIN usuarios as u 
-                                                        ON u.id_user = pc.id_user
-                                                            WHERE u.id_user = :id_user');
-
-            $queryConvUser->bindParam(':id_user', $_SESSION['id_user']);
+                                                INNER JOIN participante_conversa as pc 
+                                                ON c.id_conversa = pc.id_conversa
+                                                INNER JOIN usuarios as u 
+                                                ON u.id_user = pc.id_user
+                                                WHERE u.id_user = :id_user');
+    
+            $queryConvUser->bindParam(':id_user', $id_user);
             $queryConvUser->execute();
             
             $resultConvs = $queryConvUser->fetchAll();
-
+    
             return $resultConvs;
         } catch (Exception $e) {
-            // Erro ao lidar com as conversas do usuario
-            echo 'Erro ao lidar com as conversas do usuario ' . $e->getMessage();
+            // Erro ao lidar com as conversas do usuário
+            echo 'Erro ao lidar com as conversas do usuário ' . $e->getMessage();
         }
     }
 
@@ -140,7 +115,7 @@ class sistemaChat implements MessageComponentInterface {
             // Certifique-se de que o usuário atual esteja autorizado a enviar mensagens para esta conversa
             if ($this->verificaçãoUsuarioConversa($conversationId, $from)) {
                 // Obtenha uma lista de todos os participantes da conversa
-                $participants = $this->participantesConversa($conversationId);
+                $participants = $this->participanteConversa($conversationId);
         
                 // Enviar a mensagem para todos os participantes
                 foreach ($participants as $participant) {   
@@ -183,7 +158,7 @@ class sistemaChat implements MessageComponentInterface {
     }
 
 
-    private function participantesConversa($conversationId) {
+    private function participanteConversa($conversationId) {
         try {
             // Obter a lista de todos os participantes da conversa com base no ID da conversa.
             // Consulte a tabela 'participante_conversa' para obter a lista de participantes.
@@ -191,9 +166,10 @@ class sistemaChat implements MessageComponentInterface {
             $dbConnection = new dbConnection();
             $conn = $dbConnection->getConnect();
 
-            $query = "SELECT id_user FROM participante_conversa WHERE id_conversa = :conversationId";
+            $query = "SELECT id_user FROM participante_conversa WHERE id_conversa = :conversationId AND id_user != :id_user";
             $stmt = $conn->prepare($query);
             $stmt->bindParam(':conversationId', $conversationId, PDO::PARAM_INT);
+            $stmt->bindParam(':id_user', $_SESSION['id_user']);
             $stmt->execute();
 
             $participants = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -223,21 +199,19 @@ class sistemaChat implements MessageComponentInterface {
         }
     }
 
-    private function idUserConnection($userId) {
+    private function idUserConnection(ConnectionInterface $conn) {
         try {
-            // Obtenha o ID do usuário com base na conexão WebSocket usando a variável de sessão.
-            if (isset($_SESSION['id_user'])) {
-                $userId = $_SESSION['id_user'];
-
-                // Verifique se a conexão está associada a um ID de usuário válido.
-                if ($userId !== null && isset($this->userConnections[$userId])) {
-                    return $userId;
-                }
+            $query = $conn->httpRequest->getUri()->getQuery();
+            $id_user = str_replace("id_user=", "", $query);
+    
+            if (!empty($id_user)) {
+                return $id_user;
             }
-            return null; // Retorna null se não encontrar uma associação válida.
+            
+            return null;
         } catch (Exception $e) {
-            // Erro ao lidar com as conversas do usuario
-            echo 'Erro ao salvar mensagem no banco de dados: ' . $e->getMessage();
+            echo 'Erro ao recuperar o ID do usuário da conexão WebSocket: ' . $e->getMessage();
+            return null;
         }
     }
 
@@ -248,21 +222,15 @@ class sistemaChat implements MessageComponentInterface {
             
             $mensagemArray = json_decode($mensagem, true);
 
-            $dataHoraAtual = new DateTime();
-            // formatando para string
-            $dataHoraFormatada = $dataHoraAtual->format('Y-m-d H:i:s');
-
-            $addMensagem = $conn->prepare("INSERT INTO mensagens(mensagem_text, id_user, id_conversa, data_registro) 
-            VALUES (:mensagem, :id_user, :id_conversa, :data_registro)");
+            $addMensagem = $conn->prepare("INSERT INTO mensagens(mensagem_text, id_user, id_conversa) 
+            VALUES (:mensagem, :id_user, :id_conversa)");
 
             $addMensagem->bindParam(':mensagem', $mensagemArray['mensagem']);
             $addMensagem->bindParam(':id_user', $mensagemArray['id_user']);
             $addMensagem->bindParam(':id_conversa', $mensagemArray['id_conversa']);
-            $addMensagem->bindParam(':data_registro', $dataHoraFormatada);
 
             $addMensagem->execute();
         } catch (Exception $e) {
-            // Erro ao salvar mensagem no banco de daodos
             echo 'Erro ao salvar mensagem no banco de daodos: ' . $e->getMessage();
         }
     }

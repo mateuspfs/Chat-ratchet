@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 
 CREATE TABLE conversas (
     id_conversa INT PRIMARY KEY AUTO_INCREMENT,
-    data_registro TIMESTAMP
+    data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE InnoDB;
 
  
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS mensagens (
     mensagem_text VARCHAR(200) NOT NULL,
     id_user INT NOT NULL,
     id_conversa INT NOT NULL,
-    data_registro TIMESTAMP NOT NULL,
+    data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT fk_usuario_conversa
         FOREIGN KEY (id_user)
             REFERENCES usuarios (id_user),
@@ -50,14 +50,14 @@ INSERT INTO usuarios(nome, email, senha) VALUES
 ('bruno', 'bruno@gmail.com', '1234'),
 ('maira', 'maira@gmail.com', '1234');
 
-INSERT INTO conversas(data_registro) VALUES 
-(CURRENT_TIMESTAMP),
-(CURRENT_TIMESTAMP),
-(CURRENT_TIMESTAMP),
-(CURRENT_TIMESTAMP),
-(CURRENT_TIMESTAMP),
-(CURRENT_TIMESTAMP),
-(CURRENT_TIMESTAMP);
+INSERT INTO conversas VALUES 
+(),
+(),
+(),
+(),
+(),
+(),
+();
 
 INSERT INTO participante_conversa(id_conversa, id_user) VALUES 
 (1, 1),
@@ -77,19 +77,19 @@ INSERT INTO participante_conversa(id_conversa, id_user) VALUES
 
 
 
-INSERT INTO mensagens(mensagem_text, id_user, id_conversa, data_registro) VALUES 
-('Olá Nicole', 2, 1, CURRENT_TIMESTAMP),
-('Olá Mateus', 1, 1, CURRENT_TIMESTAMP),
-('Tudo bem com você?', 1, 1, CURRENT_TIMESTAMP),
-('Tudo sim, e com vc?', 2, 1, CURRENT_TIMESTAMP),
-('Olá Bone', 3, 2, CURRENT_TIMESTAMP),
-('Olá Rodrigo', 4, 2, CURRENT_TIMESTAMP),
-('Tudo bem com você?', 4, 2, CURRENT_TIMESTAMP),
-('Tudo sim, e com vc?', 3, 2, CURRENT_TIMESTAMP),
-('Olá Maira', 5, 3, CURRENT_TIMESTAMP),
-('Olá Bruno', 6, 3, CURRENT_TIMESTAMP),
-('Tudo bem com você?', 6, 3, CURRENT_TIMESTAMP),
-('Tudo sim, e com vc?', 5, 3, CURRENT_TIMESTAMP);
+INSERT INTO mensagens(mensagem_text, id_user, id_conversa) VALUES 
+('Olá Nicole', 2, 1),
+('Olá Mateus', 1, 1),
+('Tudo bem com você?', 1, 1),
+('Tudo sim, e com vc?', 2, 1),
+('Olá Bone', 3, 2),
+('Olá Rodrigo', 4, 2),
+('Tudo bem com você?', 4, 2),
+('Tudo sim, e com vc?', 3, 2),
+('Olá Maira', 5, 3),
+('Olá Bruno', 6, 3),
+('Tudo bem com você?', 6, 3),
+('Tudo sim, e com vc?', 5, 3);
 
 select u.nome, m.mensagem_text 
 	from usuarios u 
@@ -97,9 +97,39 @@ select u.nome, m.mensagem_text
 			where u.id_user = m.id_user
             and u.id_user = 5;
             
-SELECT count(.id_conversa) 
+SELECT c.id_conversa as 'numero de conversas do usuario'
 	FROM conversas as c
 		INNER JOIN participante_conversa as pc ON c.id_conversa = pc.id_conversa
 		INNER JOIN usuarios as u ON u.id_user = pc.id_user
-        WHERE u.id_user = 3;
+			WHERE u.id_user = 1;
+            
+SELECT msg.id_msg, msg.mensagem_text, msg.id_user, msg.data_registro, u.nome 
+                  FROM mensagens AS msg 
+                  INNER JOIN usuarios AS u
+                  ON u.id_user = msg.id_user
+                  WHERE msg.id_conversa = 1
+                  ORDER BY msg.data_registro DESC 
+                  LIMIT 10
+                  OFFSET 0;
+                  
+SELECT pc.id_conversa as "idConversa", pc.id_user as "Participante da Conversa"
+	FROM conversas as c
+	  INNER JOIN participante_conversa as pc 
+		  ON c.id_conversa = pc.id_conversa
+	  INNER JOIN usuarios as u 
+		  ON u.id_user = pc.id_user
+			  WHERE pc.id_conversa = 1
+				AND pc.id_user != 2 ;
 
+SELECT id_conversa, id_user 
+	FROM participante_conversa 
+		WHERE id_conversa = 1;
+        
+SELECT c.id_conversa, u.id_user
+	FROM conversas as c
+		INNER JOIN participante_conversa as pc 
+			ON c.id_conversa = pc.id_conversa
+		INNER JOIN usuarios as u 
+			ON u.id_user = pc.id_user
+				WHERE u.id_user = 1;
+			
