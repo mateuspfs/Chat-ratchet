@@ -5,6 +5,8 @@ const mensagemChat = document.getElementById('mensagem-chat'); // recuperar o id
 
 var offset = 0;
 
+var chatBox = document.getElementById("chat-box");
+
 let idConversaAtual = null;
 
 const ws = new WebSocket('ws://localhost:8080?id_user=' + userId);
@@ -16,6 +18,8 @@ ws.onmessage = (mensagemRecebida) => {
 
     // enviar a mensagem para o html, inserindo no final
     mensagemChat.insertAdjacentHTML('beforeend', `${resultado.nome}:${resultado.mensagem} <br>`);
+
+    scroolBotoom();
 }
 
 const enviar = () => {
@@ -40,6 +44,8 @@ const enviar = () => {
 
     // limpa o campo
     mensagem.value = '';
+
+    scroolBotoom();
 }
 
 // Função para buscar os dados das conversas usando fetch
@@ -130,21 +136,38 @@ async function carregarMsg(idConversa) {
     }
 }
 
-// // Mover o scroll para o final
-// var roleFinal = true;
+function verificarScroll() {
+    if (chatBox.scrollTop <= 10) {
+        console.log("Usuário está próximo ao topo");
+        offset += 10; // Aumenta o valor do offset (pode ser ajustado conforme necessário)
+        carregarMsg(idConversaAtual);
+    }
+}
 
-// function verificarScroll(){
-//     var chatBox = document.getElementById("chat-box");
+function scroolBotoom() {
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
 
-//     if(chatBox.scrollTop <=10) {
-//     console.log("usuario está proximo ao topo");
-
-//     carregarMsg();
-//     }
-// }
-
-// chatBox.addeEventListener('scroll', verificarScroll);
+chatBox.addEventListener('scroll', verificarScroll);
 
 // Chame a função para buscar os dados das conversas quando a página carregar
 
-document.addEventListener('DOMContentLoaded', buscarDadosConversas);
+document.addEventListener('DOMContentLoaded', function() {
+    const messageForm = document.getElementById('message-chat');
+    const messageFormSubmitButton = document.querySelector('#message-chat input[type="button"]');
+
+    messageForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Impede o envio padrão do formulário que recarregaria a página
+
+        // Execute a função 'enviar()' ou qualquer lógica que você deseja aqui
+        enviar(); // Chame a função 'enviar()' ou qualquer outra lógica de envio
+    });
+
+    // Adicione também o listener para buscar dados de conversas
+    buscarDadosConversas();
+
+    // Se você deseja que o envio também possa ser acionado pelo botão do formulário, você pode fazer o seguinte:
+    messageFormSubmitButton.addEventListener('click', function() {
+        enviar();
+    });
+});

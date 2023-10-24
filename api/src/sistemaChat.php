@@ -59,6 +59,7 @@ class sistemaChat implements MessageComponentInterface {
             try {
                 // Envie a mensagem para os participantes desta conversa
                 $this->mandarMensagemConversa($conversationId, $msg, $from);
+                echo 'Mensagem enviada com sucesso';
             } catch (Exception $e) {
                 // Lidar com erros durante o envio da mensagem
                 // Aqui você pode registrar o erro, notificar o usuário, etc.
@@ -66,6 +67,7 @@ class sistemaChat implements MessageComponentInterface {
             }
         }
         $this->salvarMensagemNoBanco($msg);
+        echo 'Mensagem salva no banco \n\n';
     }
     
 

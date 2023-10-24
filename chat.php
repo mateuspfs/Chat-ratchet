@@ -20,27 +20,35 @@ require_once 'verificacao.php';
     <h3>Bem vindo <span id="usuario"><?php echo $_SESSION['usuario']?></span></h3>
 
     <div class="chat-container">
+
         <div class="user-list">
             <h2>Usuários</h2>
             <ul id="user-list">
                 <!-- A lista de conversas será preenchida dinamicamente com JavaScript -->
             </ul>
         </div>
+
         <div class="chat-box" id="chat-box">
+
             <div class="chat-header">
                 <h2>Conversa com <span id="nome_usuario"></span></h2>
             </div>
+
             <div class="mensagem-chat" id="mensagem-chat">
-                <!-- Aqui você exibirá as mensagens da conversa -->
+                <!-- Aqui exibirá as mensagens da conversa -->
             </div>
-            <div class="message-input">
+
+            <form class="message-chat" id="message-chat">
                 <input type="text" name="mensagem" id="mensagem" placeholder="Digite a mensagem...">
                 <input type="hidden" name="id_user" id="id_user" value="<?php echo $_SESSION['id_user']?>">
                 <input type="button" onclick="enviar()" value="Enviar">
-            </div>
+            </form>
+
         </div>
+        
     </div>
 
     <script src="js/custom.js"></script>
+
 </body>
 </html>
