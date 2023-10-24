@@ -9,6 +9,8 @@ var chatBox = document.getElementById("chat-box");
 
 let idConversaAtual = null;
 
+let resultadoFoiExibido = false;
+
 const ws = new WebSocket('ws://localhost:8080?id_user=' + userId);
 
 ws.onmessage = (mensagemRecebida) => {
@@ -131,15 +133,19 @@ async function carregarMsg(idConversa) {
             var mensagem = `${item.nome}: ${item.mensagem_text} <br>`;
             mensagemChat.insertAdjacentHTML('afterbegin', userId == item.id_user ? mensagem : mensagem);
         });
-    } else {
+        offset += resposta.qtd_msg; // Atualize o valor de offset
+    } else if (!resultadoFoiExibido) {
+        // Se resposta.status for false e resultadoFoiExibido for false,
+        // exiba a mensagem e defina resultadoFoiExibido como true
         mensagemChat.insertAdjacentHTML('afterbegin', `<p style='color:red;'>${resposta.msg}</p>`);
+        resultadoFoiExibido = true;
     }
+
 }
 
 function verificarScroll() {
     if (chatBox.scrollTop <= 10) {
         console.log("Usuário está próximo ao topo");
-        offset += 10; // Aumenta o valor do offset (pode ser ajustado conforme necessário)
         carregarMsg(idConversaAtual);
     }
 }

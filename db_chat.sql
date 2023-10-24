@@ -1,4 +1,3 @@
-drop database db_chat;
 CREATE DATABASE IF NOT EXISTS db_chat;
 USE db_chat;
 
