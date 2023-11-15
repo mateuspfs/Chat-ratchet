@@ -2,32 +2,29 @@
 
 echo "<h1> Bem vindo ao teste <h1>";
 
-function conversasDoUsuario($id_user) {
+function verificaçãoUsuarioConversa($conversationId) {  //OK
     try {
-        // Pega os IDs das conversas às quais o usuário está ligado
-        include_once 'api/connection.php';
-
-        $queryConvUser = $conn->prepare('SELECT c.id_conversa
-                                            FROM conversas as c
-                                            INNER JOIN participante_conversa as pc 
-                                            ON c.id_conversa = pc.id_conversa
-                                            INNER JOIN usuarios as u 
-                                            ON u.id_user = pc.id_user
-                                            WHERE u.id_user = :id_user');
-
-        $queryConvUser->bindParam(':id_user', $id_user);
-        $queryConvUser->execute();
-        
-        $resultConvs = $queryConvUser->fetchAll(PDO::FETCH_COLUMN, 0);
-
-        return $resultConvs;
+        include 'api/connection.php';
+        // Verifique se o usuário atual está autorizado a enviar mensagens para esta conversa
+        $userId = 6;
+    
+    
+        $stmt = $conn->prepare("SELECT COUNT(*) AS autorizado FROM participante_conversa WHERE id_conversa = :conversationId AND id_user = :userId");
+        $stmt->bindParam(':conversationId', $conversationId, PDO::PARAM_INT);
+        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        return $result['autorizado'] > 0;
     } catch (Exception $e) {
-        // Erro ao lidar com as conversas do usuário
-        echo 'Erro ao lidar com as conversas do usuário ' . $e->getMessage();
+        // Erro ao verificar usuario e conversa
+        echo 'Erro ao verificar usuario e conversa ' . $e->getMessage();
     }
 }
 
-$resultado = conversasDoUsuario(1);
+
+$resultado = verificaçãoUsuarioConversa(6);
 
 echo '<pre>';
 print_r($resultado);

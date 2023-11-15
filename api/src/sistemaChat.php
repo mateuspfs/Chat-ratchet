@@ -210,8 +210,7 @@ class sistemaChat implements MessageComponentInterface {
     
             if (!empty($id_user)) {
                 return $id_user;
-            }
-            
+            }   
             return null;
         } catch (Exception $e) {
             echo 'Erro ao recuperar o ID do usuário da conexão WebSocket: ' . $e->getMessage();
